@@ -1,28 +1,43 @@
-import json
-import random
-from datetime import datetime
-
-def generate_random_id(prefix="item"):
-    unique_id = f"{prefix}_{random.randint(1000, 9999)}"
-    return unique_id
+from typing import List, Dict, Any
 
 
-def format_gaming_data(player_id, score, game_name):
-    data = {
-        "playerId": player_id,
-        "score": score,
-        "game": game_name,
-        "timestamp": datetime.now().isoformat(),
-        "id": generate_random_id("scoreboard")
-    }
-    return json.dumps(data)
+def calculate_scores(player_stats: List[Dict[str, Any]]) -> Dict[str, float]:
+    """
+    Calculate average score for each player based on their stats.
+    
+    Args:
+        player_stats (List[Dict[str, Any]]): A list of dictionaries containing player statistics.
+        Each dictionary must have 'name' and 'score' keys.
+
+    Returns:
+        Dict[str, float]: A dictionary with player names as keys and their average scores as values.
+    """
+    score_totals: Dict[str, float] = {}
+    score_counts: Dict[str, int] = {}
+
+    for stat in player_stats:
+        name = stat['name']
+        score = stat['score']
+        if name in score_totals:
+            score_totals[name] += score
+            score_counts[name] += 1
+        else:
+            score_totals[name] = score
+            score_counts[name] = 1
+
+    average_scores = {name: total / score_counts[name] for name, total in score_totals.items()}
+    return average_scores
 
 
-def leaderboard_sort(gaming_data):
-    leaderboard = sorted(gaming_data, key=lambda x: x['score'], reverse=True)
-    return leaderboard
+def filter_top_players(scores: Dict[str, float], threshold: float) -> List[str]:
+    """
+    Filter the players who have an average score above a given threshold.
+    
+    Args:
+        scores (Dict[str, float]): A dictionary with player names and their average scores.
+        threshold (float): The score threshold for filtering players.
 
-
-def filter_top_scores(gaming_data, top_n=10):
-    leaderboard = leaderboard_sort(gaming_data)
-    return leaderboard[:top_n]
+    Returns:
+        List[str]: A list of player names who exceed the score threshold.
+    """
+    return [player for player, score in scores.items() if score > threshold]
