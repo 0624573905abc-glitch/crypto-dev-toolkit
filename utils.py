@@ -1,43 +1,33 @@
+import json
+import random
 from typing import List, Dict, Any
 
-
-def calculate_scores(player_stats: List[Dict[str, Any]]) -> Dict[str, float]:
-    """
-    Calculate average score for each player based on their stats.
-    
-    Args:
-        player_stats (List[Dict[str, Any]]): A list of dictionaries containing player statistics.
-        Each dictionary must have 'name' and 'score' keys.
-
-    Returns:
-        Dict[str, float]: A dictionary with player names as keys and their average scores as values.
-    """
-    score_totals: Dict[str, float] = {}
-    score_counts: Dict[str, int] = {}
-
-    for stat in player_stats:
-        name = stat['name']
-        score = stat['score']
-        if name in score_totals:
-            score_totals[name] += score
-            score_counts[name] += 1
-        else:
-            score_totals[name] = score
-            score_counts[name] = 1
-
-    average_scores = {name: total / score_counts[name] for name, total in score_totals.items()}
-    return average_scores
+def generate_game_data(game_id: str, player_count: int) -> Dict[str, Any]:
+    return {
+        'game_id': game_id,
+        'players': [generate_player_data(i) for i in range(1, player_count + 1)],
+        'winner': get_random_winner(player_count)
+    }
 
 
-def filter_top_players(scores: Dict[str, float], threshold: float) -> List[str]:
-    """
-    Filter the players who have an average score above a given threshold.
-    
-    Args:
-        scores (Dict[str, float]): A dictionary with player names and their average scores.
-        threshold (float): The score threshold for filtering players.
+def generate_player_data(player_number: int) -> Dict[str, Any]:
+    return {
+        'player_id': f'player_{player_number}',
+        'score': random.randint(0, 100),
+        'level': random.choice([1, 2, 3, 4, 5])
+    }
 
-    Returns:
-        List[str]: A list of player names who exceed the score threshold.
-    """
-    return [player for player, score in scores.items() if score > threshold]
+
+def get_random_winner(player_count: int) -> str:
+    winner_index = random.randint(0, player_count - 1)
+    return f'player_{winner_index + 1}'
+
+
+def save_game_data_to_json(game_data: Dict[str, Any], filename: str) -> None:
+    with open(filename, 'w') as f:
+        json.dump(game_data, f, indent=4)
+
+
+def load_game_data_from_json(filename: str) -> Dict[str, Any]:
+    with open(filename, 'r') as f:
+        return json.load(f)
