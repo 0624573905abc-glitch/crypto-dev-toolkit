@@ -1,33 +1,36 @@
-import json
-import random
-import logging
+import time
+import numpy as np
 
-logging.basicConfig(level=logging.INFO)
+class PerformanceOptimizer:
+    def __init__(self):
+        self.execution_times = []
 
-class CryptoError(Exception):
-    pass
+    def time_function(self, func):
+        def wrapper(*args, **kwargs):
+            start_time = time.time()
+            result = func(*args, **kwargs)
+            end_time = time.time()
+            self.execution_times.append(end_time - start_time)
+            return result
+        return wrapper
 
-def validate_address(address):
-    if not isinstance(address, str) or len(address) != 42:
-        raise CryptoError('Invalid address format')
-    return True
+    def get_average_time(self):
+        if not self.execution_times:
+            return 0
+        return np.mean(self.execution_times)
 
-def simulate_transaction(amount, balance):
-    if amount <= 0:
-        raise CryptoError('Transaction amount must be positive')
-    if amount > balance:
-        raise CryptoError('Insufficient funds')
-    return balance - amount
+    def reset_times(self):
+        self.execution_times.clear()
 
-def generate_random_items(num_items):
-    if num_items < 1:
-        raise CryptoError('Number of items must be at least 1')
-    return [random.randint(1, 100) for _ in range(num_items)]
+# Example usage
+@PerformanceOptimizer().time_function
+def heavy_computation(x):
+    total = 0
+    for i in range(1, x + 1):
+        total += i ** 2
+    return total
 
-if __name__ == '__main__':
-    try:
-        print(validate_address('0x1234567890abcdef1234567890abcdef12345678'))
-        print(simulate_transaction(50, 100))
-        print(generate_random_items(10))
-    except CryptoError as e:
-        logging.error(e)
+# Call the function to see performance logging
+result = heavy_computation(10000)
+avg_time = PerformanceOptimizer().get_average_time()
+print(f"Result: {result}, Average Execution Time: {avg_time}")
