@@ -1,36 +1,41 @@
-import random
-import string
+from typing import List, Dict, Any
 
 
-def generate_random_string(length=12):
-    """Generate a random string of fixed length.
-    :param length: Length of the string to generate.
-    :return: Randomly generated string.
-    """  
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
+def calculate_reward(level: int, performance: float) -> float:
+    """Calculate the reward based on level and performance.
+
+    Args:
+        level (int): The player level.
+        performance (float): The performance score (0 to 1).
+
+    Returns:
+        float: The calculated reward.
+    """
+    base_reward = 100.0
+    modifier = 1 + (level * 0.1)
+    return base_reward * modifier * performance
 
 
-def calculate_win_probability(player_skill, opponent_skill):
-    """Calculate win probability based on skill levels.
-    :param player_skill: Skill level of the player (1-100).
-    :param opponent_skill: Skill level of the opponent (1-100).
-    :return: Win probability as a float between 0 and 1.
-    """  
-    total_skill = player_skill + opponent_skill
-    return player_skill / total_skill if total_skill > 0 else 0.5
+def format_player_data(player_data: Dict[str, Any]) -> str:
+    """Format player data into a readable string.
+
+    Args:
+        player_data (Dict[str, Any]): A dictionary containing player data.
+
+    Returns:
+        str: A formatted string of player data.
+    """
+    return f"Player {player_data['name']} (Level: {player_data['level']}) - Score: {player_data['score']:.2f}"
 
 
-def format_currency(amount, currency_symbol='$'):
-    """Format a float amount as currency.
-    :param amount: The float amount to format.
-    :param currency_symbol: The symbol for the currency.
-    :return: Formatted currency string.
-    """  
-    return f'{currency_symbol}{amount:,.2f}'
+def filter_high_scorers(players: List[Dict[str, Any]], threshold: float) -> List[Dict[str, Any]]:
+    """Filter players based on their scores being above a threshold.
 
+    Args:
+        players (List[Dict[str, Any]]): A list of player dictionaries.
+        threshold (float): The minimum score to qualify.
 
-def shuffle_list(items):
-    """Shuffle a list in place.
-    :param items: List of items to shuffle.
-    """  
-    random.shuffle(items)
+    Returns:
+        List[Dict[str, Any]]: A list of qualifying player dictionaries.
+    """
+    return [player for player in players if player['score'] > threshold]
