@@ -1,40 +1,39 @@
 import json
 import os
 
-class ConfigError(Exception):
-    pass
+DEFAULT_CONFIG = {
+    "game_name": "MyGame",
+    "resolution": "1920x1080",
+    "fullscreen": True,
+    "volume": 75,
+    "controls": {
+        "move_forward": "W",
+        "move_backward": "S",
+        "turn_left": "A",
+        "turn_right": "D",
+        "jump": "Space"
+    }
+}
 
-class Config:
-    def __init__(self, filename='config.json'):
-        self.filename = filename
-        self.config = {}
-        self.load_config()
+class ConfigLoader:
+    def __init__(self, config_path='config.json'):
+        self.config_path = config_path
+        self.config = self.load_config()
 
     def load_config(self):
-        try:
-            if not os.path.exists(self.filename):
-                raise ConfigError(f'Configuration file {self.filename} not found.')
-            with open(self.filename, 'r') as file:
-                self.config = json.load(file)
-        except json.JSONDecodeError:
-            raise ConfigError('Error decoding JSON from config file.')
-        except Exception as e:
-            raise ConfigError(f'Unexpected error: {str(e)}')
+        if os.path.exists(self.config_path):
+            with open(self.config_path, 'r') as file:
+                user_config = json.load(file)
+            return {**DEFAULT_CONFIG, **user_config}
+        return DEFAULT_CONFIG
 
     def get(self, key, default=None):
-        if key in self.config:
-            return self.config[key]
-        if default is not None:
-            return default
-        raise ConfigError(f'Key {key} not found in config.')
+        return self.config.get(key, default)
 
-    def set(self, key, value):
-        self.config[key] = value
-        self.save_config()
+    def save(self):
+        with open(self.config_path, 'w') as file:
+            json.dump(self.config, file, indent=4)
 
-    def save_config(self):
-        try:
-            with open(self.filename, 'w') as file:
-                json.dump(self.config, file, indent=4)
-        except Exception as e:
-            raise ConfigError(f'Failed to save config: {str(e)}')
+# Usage example:
+# config_loader = ConfigLoader()
+# print(config_loader.get('game_name'))
